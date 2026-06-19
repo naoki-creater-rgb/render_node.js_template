@@ -12,20 +12,30 @@ app.use(express.static('public'))
 app.ws('/ws', (ws, req) => {
   connects.push(ws)
 
-  ws.on('message', (message) => {
-    console.log('Received:', message)
+  ws.on('message', (rawMessage) => {
+    try {
+      const data = JSON.parse(rawMessage);
+      console.log(`[${data.username}]: ${data.message}`);
+    } catch (e) {
+      console.log('JSONではないデータを受信:', rawMessage);
+    }
 
     connects.forEach((socket) => {
       if (socket.readyState === 1) {
-        // Check if the connection is open
-        socket.send(message)
+        socket.send(rawMessage);
       }
-    })
-  })
+    });
+  });
 
-  ws.on('close', () => {
-    connects = connects.filter((conn) => conn !== ws)
-  })
+  ws.onmessage = (event) => {
+    const data = JSON.parse(event.data);
+
+    const li = document.createElement('li');
+    li.textContent = `${data.username}: ${data.message}`;
+    li.classList.add('message-item');
+    
+    messages.appendChild(li);
+};
 })
 
 app.listen(port, () => {

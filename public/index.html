@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>Chat App</title>
+  <style>
+    body {
+      background: #f0f2f5;
+      padding: 20px;
+      font-family: sans-serif;
+    }
+
+    .chat {
+      max-width: 500px;
+      margin: 0 auto;
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+    }
+
+    .messages {
+      list-style: none;
+      padding: 10px;
+      min-height: 200px;
+      border: 1px solid #ddd;
+      background: #fafafa;
+    }
+
+    .form {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .input {
+      flex: 1;
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    .submit {
+      padding: 8px 16px;
+      background: #007bff;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    /* --- <style> タグの中に以下を追加 --- */
+    .messages {
+      list-style: none;
+      padding: 10px;
+      min-height: 200px;
+      border: 1px solid #ddd;
+      background: #fafafa;
+      /* 追記: メッセージ同士に隙間をあける */
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    /* 新しく追加するスタイル */
+    .message-item {
+      background: #ffffff;
+      /* 背景を白に */
+      border: 1px solid #e0e0e0;
+      /* 薄いグレーの四角い枠線 */
+      border-radius: 6px;
+      /* 角を少し丸くする */
+      padding: 10px 14px;
+      /* 枠の中の余白 */
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+      /* ほんのり影をつける */
+      word-break: break-all;
+      /* 長い文章でも枠内で折り返す */
+      max-width: 80%;
+      /* 横幅が広がりすぎないように */
+      align-self: flex-start;
+      /* 左寄せにする */
+    }
+
+    .message-item {
+      background: #ffffff;
+      border: 1px solid #e0e0e0;
+      border-radius: 6px;
+      padding: 10px 14px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+      word-break: break-all;
+      max-width: 80%;
+      align-self: flex-start;
+      /* 左寄せ */
+    }
+
+    /* 自分のメッセージ（右側・青） */
+    .message-item.my-message {
+      background: #007bff;
+      /* 背景を綺麗な青色に */
+      color: white;
+      /* 文字色を白に */
+      border: none;
+      /* 枠線を消す */
+      align-self: flex-end;
+      /* 右寄せにする！ */
+    }
+
+    .message-item.my-message {
+      background: #007bff;
+      /* 背景を綺麗な青色に */
+      color: white;
+      /* 文字色を白に */
+      border: none;
+      /* 枠線を消す */
+      align-self: flex-end;
+      /* 右寄せにする！ */
+    }
+  </style>
+</head>
+
+<body>
+  <div class="chat">
+    <ul class="messages"></ul>
+
+    <form class="form">
+      <input class="input" placeholder="メッセージを入力..." autocomplete="off" />
+      <button class="submit">送信</button>
+    </form>
+  </div>
+
+  <div class="user-selector" style="margin-bottom: 15px; padding: 10px; background: #e9ecef; border-radius: 6px;">
+    <span style="font-weight: bold; margin-right: 10px;">ユーザー選択:</span>
+    <label><input type="radio" name="username" value="Alice" checked> Alice</label>
+    <label style="margin-left: 10px;"><input type="radio" name="username" value="Bob"> Bob</label>
+    <label style="margin-left: 10px;"><input type="radio" name="username" value="Charlie"> Charlie</label>
+  </div>
+
+  <script>
+    function main() {
+      const host = location.origin.replace(/^http/, 'ws');
+      const ws = new WebSocket(host + '/ws');
+
+      const form = document.querySelector('.form');
+      const input = document.querySelector('.input');
+      const messages = document.querySelector('.messages');
+
+      ws.onmessage = (event) => {
+        const li = document.createElement('li');
+        const data = JSON.parse(event.data)
+        li.textContent = data.message;
+
+        const userType = data.user;
+
+        li.textContent = data.message;
+
+        if (userType === "Alice") {
+          li.classList.add('message-item', 'my-message');
+        } else {
+          li.classList.add('message-item');
+        }
+
+        messages.appendChild(li);
+      };
+
+      form.addEventListener('submit', (event) => {
+        event.preventDefault();
+        if (input.value) {
+          const selectedUser = document.querySelector('input[name="username"]:checked').value
+
+          const data = {
+            "user": selectedUser,
+            "message": input.value
+          }
+
+          ws.send(JSON.stringify(data));
+          input.value = '';
+        }
+      });
+    }
+    main();
+  </script>
+</body>
+
+</html>
