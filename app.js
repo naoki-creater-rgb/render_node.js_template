@@ -15,7 +15,7 @@ app.ws('/ws', (ws, req) => {
   ws.on('message', (rawMessage) => {
     try {
       const data = JSON.parse(rawMessage);
-      console.log(`[${data.username}]: ${data.message}`);
+      console.log(`[${data.user}]: ${data.message}`);
     } catch (e) {
       console.log('JSONではないデータを受信:', rawMessage);
     }
@@ -26,16 +26,6 @@ app.ws('/ws', (ws, req) => {
       }
     });
   });
-
-  ws.onmessage = (event) => {
-    const data = JSON.parse(event.data);
-
-    const li = document.createElement('li');
-    li.textContent = `${data.username}: ${data.message}`;
-    li.classList.add('message-item');
-    
-    messages.appendChild(li);
-};
 })
 
 app.listen(port, () => {
